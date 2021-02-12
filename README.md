@@ -8,10 +8,17 @@ This game has both keyboard controls and on-screen mobile controls.
 
 ##### Keyboard
 
+<<<<<<< HEAD
 * Move Up - W
 * Move Down - S
 * Move Left - A
 * Move Right - D
+=======
+* Move Up - Arrow Up Key
+* Move Down - Arrow Down Key
+* Move Left - Arrow Left Key
+* Move Right - Arrow Right Key
+>>>>>>> 9eca5e31a874a605c16cb0107359aac023f5b5c2
 
 ### Check the App
 
