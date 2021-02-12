@@ -107,8 +107,7 @@ function retrieveScore() {
 function restartGame() {
   score = 0;
   highScore = 0;
-  window.location = "/snake-game/";
-  // window.location = "/";
+  window.location = "/";
 }
 
 function toggleSwitch() {
@@ -149,11 +148,11 @@ async function submitScore() {
 
     if (post.success) {
       alert("Successfully submitted score " + score);
-      window.location = "/snake-game/";
+      window.location = "/";
     }
   } 
 
-  window.location = "/snake-game/";
+  window.location = "/";
 }
 
 playBtn.addEventListener('click', startGame);
