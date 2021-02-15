@@ -140,7 +140,7 @@ async function submitScore() {
 
   const options = {
     tournament_id,
-    score
+    metadata: '{"score": ' + score + '}'
   }
 
   if (tournament_id !== null) {
