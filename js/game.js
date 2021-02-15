@@ -143,6 +143,8 @@ async function submitScore() {
     metadata: '{"score": ' + score + '}'
   }
 
+  console.log("options are", options);
+
   if (tournament_id !== null) {
     const post = await op.postScore(options);
 
