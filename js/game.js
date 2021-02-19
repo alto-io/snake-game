@@ -30,7 +30,7 @@ const positionText = document.getElementById('position');
 // GAME LOOP
 let deltaTime = 0;
 let gameOver = false;
-let snakeSpeed = 5; //how many times the snake moves per second
+let snakeSpeed = 6; //how many times the snake moves per second
 let score = 0;
 let highScore =  0;
 scoreContainer.innerHTML = score;
@@ -121,26 +121,44 @@ function toggleSwitch() {
 
 export function increaseSpeed() {
   snakeSpeed += RATE_INCREASE;
-  if (snakeSpeed >= 6) {
-    snakeSpeed += RATE_INCREASE * 4;
+  if (snakeSpeed >= 7) {
+    snakeSpeed += RATE_INCREASE * 5;
   }
 }
 
 export function addScore() {
   score += Math.floor(snakeSpeed) + ADD_SCORE;
-  if (snakeSpeed >= 10) {
+  if (snakeSpeed >= 15) {
     score += Math.floor(snakeSpeed) + ADD_SCORE * 2;
   }
   scoreContainer.innerHTML = score;
   compareScore(score, highScore);
 }
 
+function refreshPage() {
+  score = 0;
+  highScore = 0;
+  setTimeout(
+    function() {
+      window.top.postMessage("refreshPage", '*');
+    }
+  , 3000);
+}
+
+function tryAgain() {
+  yesBtn.innerHTML = "Loading...";
+  yesBtn.style.opacity = 0.5;
+  yesBtn.style.pointerEvents = "none";
+  refreshPage();
+}
+
 async function submitScore() {
   const tournament_id = op.getTournamentId();
+  const scorePassed = Number(score);
 
   const options = {
     tournament_id,
-    metadata: '{"score": ' + score + '}'
+    metadata: '{"score": ' + scorePassed + '}'
   }
 
   console.log("options are", options);
@@ -150,16 +168,18 @@ async function submitScore() {
 
     if (post.success) {
       alert("Successfully submitted score " + score);
-      window.location = "/";
     }
   } 
 
-  window.location = "/";
+  noBtn.innerHTML = "Loading...";
+  noBtn.style.opacity = 0.5;
+  noBtn.style.pointerEvents = "none";
+  refreshPage();
 }
 
 playBtn.addEventListener('click', startGame);
 instBtn.addEventListener('click', instructions);
 backBtn.addEventListener('click', back);
-yesBtn.addEventListener('click', restartGame);
+yesBtn.addEventListener('click', tryAgain);
 noBtn.addEventListener('click', submitScore);
 switchBtn.addEventListener('click', toggleSwitch);
