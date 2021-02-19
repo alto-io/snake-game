@@ -7,12 +7,12 @@ import {
 import { update as updateFood, draw as drawFood } from './food.js';
 import { outsideGrid } from './grid.js';
 import { RATE_INCREASE, ADD_SCORE } from './constants.js';
-import './op.js';
+// import './op.js';
 
 // DOM
 const gameBoard = document.getElementById('gameBoard');
 const scoreContainer = document.getElementById('score');
-const highScoreContainer = document.getElementById('highScore');
+// const highScoreContainer = document.getElementById('highScore');
 const playBtn = document.getElementById('play');
 const instBtn = document.getElementById('instructions');
 const loginBtn = document.getElementById('login');
@@ -34,7 +34,7 @@ let snakeSpeed = 6; //how many times the snake moves per second
 let score = 0;
 let highScore =  0;
 scoreContainer.innerHTML = score;
-highScoreContainer.innerHTML = score;
+// highScoreContainer.innerHTML = score;
 
 
 function main (currentTime) {
@@ -100,7 +100,7 @@ function compareScore(score, highScore) {
 function retrieveScore() {
   if (localStorage.getItem('highScore') !== null) {
     highScore = parseInt(localStorage.getItem('highScore'));
-    highScoreContainer.innerHTML = highScore;
+    // highScoreContainer.innerHTML = highScore;
   }
 }
 
