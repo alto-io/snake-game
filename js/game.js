@@ -7,7 +7,7 @@ import {
 import { update as updateFood, draw as drawFood } from './food.js';
 import { outsideGrid } from './grid.js';
 import { RATE_INCREASE, ADD_SCORE } from './constants.js';
-import './op.js';
+// import './op.js';
 
 // DOM
 const gameBoard = document.getElementById('gameBoard');
@@ -143,6 +143,7 @@ function refreshPage() {
       window.top.postMessage("refreshPage", '*');
     }
   , 3000);
+  window.location = "/";
 }
 
 function tryAgain() {
@@ -176,6 +177,8 @@ async function submitScore() {
   noBtn.style.pointerEvents = "none";
   refreshPage();
 }
+
+console.log("Local");
 
 playBtn.addEventListener('click', startGame);
 instBtn.addEventListener('click', instructions);
