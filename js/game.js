@@ -7,7 +7,7 @@ import {
 import { update as updateFood, draw as drawFood } from './food.js';
 import { outsideGrid } from './grid.js';
 import { RATE_INCREASE, ADD_SCORE } from './constants.js';
-// import './op.js';
+import './op.js';
 
 // DOM
 const gameBoard = document.getElementById('gameBoard');
@@ -93,14 +93,12 @@ function checkDeath() {
 function compareScore(score, highScore) {
   if (score > highScore) {
     highScore = score;
-    // highScoreContainer.innerHTML = highScore;
   } return
 }
 
 function retrieveScore() {
   if (localStorage.getItem('highScore') !== null) {
     highScore = parseInt(localStorage.getItem('highScore'));
-    // highScoreContainer.innerHTML = highScore;
   }
 }
 
@@ -132,7 +130,6 @@ export function addScore() {
     score += Math.floor(snakeSpeed) + ADD_SCORE * 2;
   }
   scoreContainer.innerHTML = score;
-  compareScore(score, highScore);
 }
 
 function refreshPage() {
@@ -143,10 +140,10 @@ function refreshPage() {
       window.top.postMessage("refreshPage", '*');
     }
   , 3000);
-  window.location = "/";
 }
 
 function tryAgain() {
+  console.log("Try Again");
   yesBtn.innerHTML = "Loading...";
   yesBtn.style.opacity = 0.5;
   yesBtn.style.pointerEvents = "none";
@@ -165,6 +162,7 @@ async function submitScore() {
   console.log("options are", options);
 
   if (tournament_id !== null) {
+    console.log("Inside submitScore")
     const post = await op.postScore(options);
 
     if (post.success) {
@@ -176,6 +174,9 @@ async function submitScore() {
   noBtn.style.opacity = 0.5;
   noBtn.style.pointerEvents = "none";
   refreshPage();
+  // score = 0;
+  // highScore = 0;
+  // window.top.postMessage("postScore", '*');
 }
 
 console.log("Local");
