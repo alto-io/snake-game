@@ -12,7 +12,7 @@ import './op.js';
 // DOM
 const gameBoard = document.getElementById('gameBoard');
 const scoreContainer = document.getElementById('score');
-const highScoreContainer = document.getElementById('highScore');
+// const highScoreContainer = document.getElementById('highScore');
 const playBtn = document.getElementById('play');
 const instBtn = document.getElementById('instructions');
 const loginBtn = document.getElementById('login');
@@ -30,11 +30,11 @@ const positionText = document.getElementById('position');
 // GAME LOOP
 let deltaTime = 0;
 let gameOver = false;
-let snakeSpeed = 5; //how many times the snake moves per second
+let snakeSpeed = 6; //how many times the snake moves per second
 let score = 0;
 let highScore =  0;
 scoreContainer.innerHTML = score;
-highScoreContainer.innerHTML = score;
+// highScoreContainer.innerHTML = score;
 
 
 function main (currentTime) {
@@ -93,22 +93,19 @@ function checkDeath() {
 function compareScore(score, highScore) {
   if (score > highScore) {
     highScore = score;
-    highScoreContainer.innerHTML = highScore;
   } return
 }
 
 function retrieveScore() {
   if (localStorage.getItem('highScore') !== null) {
     highScore = parseInt(localStorage.getItem('highScore'));
-    highScoreContainer.innerHTML = highScore;
   }
 }
 
 function restartGame() {
   score = 0;
   highScore = 0;
-  window.location = "/snake-game/";
-  // window.location = "/";
+  window.location = "/";
 }
 
 function toggleSwitch() {
@@ -122,43 +119,71 @@ function toggleSwitch() {
 
 export function increaseSpeed() {
   snakeSpeed += RATE_INCREASE;
-  if (snakeSpeed >= 6) {
-    snakeSpeed += RATE_INCREASE * 4;
+  if (snakeSpeed >= 7) {
+    snakeSpeed += RATE_INCREASE * 5;
   }
 }
 
 export function addScore() {
   score += Math.floor(snakeSpeed) + ADD_SCORE;
-  if (snakeSpeed >= 10) {
+  if (snakeSpeed >= 15) {
     score += Math.floor(snakeSpeed) + ADD_SCORE * 2;
   }
   scoreContainer.innerHTML = score;
-  compareScore(score, highScore);
+}
+
+function refreshPage() {
+  score = 0;
+  highScore = 0;
+  setTimeout(
+    function() {
+      window.top.postMessage("refreshPage", '*');
+    }
+  , 3000);
+}
+
+function tryAgain() {
+  console.log("Try Again");
+  yesBtn.innerHTML = "Loading...";
+  yesBtn.style.opacity = 0.5;
+  yesBtn.style.pointerEvents = "none";
+  refreshPage();
 }
 
 async function submitScore() {
   const tournament_id = op.getTournamentId();
+  const scorePassed = Number(score);
 
   const options = {
     tournament_id,
-    score
+    metadata: '{"score": ' + scorePassed + '}'
   }
 
+  console.log("options are", options);
+
   if (tournament_id !== null) {
+    console.log("Inside submitScore")
     const post = await op.postScore(options);
 
     if (post.success) {
       alert("Successfully submitted score " + score);
-      window.location = "/snake-game/";
     }
   } 
 
-  window.location = "/snake-game/";
+  noBtn.innerHTML = "Loading...";
+  noBtn.style.opacity = 0.5;
+  noBtn.style.pointerEvents = "none";
+  refreshPage();
+  // score = 0;
+  // highScore = 0;
+  // window.top.postMessage("postScore", '*');
 }
+
+console.log("Local");
 
 playBtn.addEventListener('click', startGame);
 instBtn.addEventListener('click', instructions);
 backBtn.addEventListener('click', back);
-yesBtn.addEventListener('click', restartGame);
+yesBtn.addEventListener('click', tryAgain);
 noBtn.addEventListener('click', submitScore);
 switchBtn.addEventListener('click', toggleSwitch);
