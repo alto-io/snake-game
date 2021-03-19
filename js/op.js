@@ -1,10 +1,14 @@
 
 (function(l, r) { if (l.getElementById('livereloadscript')) return; r = l.createElement('script'); r.async = 1; r.src = '//' + (window.location.host || 'localhost').split(':')[0] + ':35729/livereload.js?snipver=1'; r.id = 'livereloadscript'; l.getElementsByTagName('head')[0].appendChild(r) })(window.document);
 (function (global, factory) {
-    typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
-    typeof define === 'function' && define.amd ? define(factory) :
-    (global = typeof globalThis !== 'undefined' ? globalThis : global || self, global.op = factory());
-}(this, (function () { 'use strict';
+    typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory(require('axios')) :
+    typeof define === 'function' && define.amd ? define(['axios'], factory) :
+    (global = typeof globalThis !== 'undefined' ? globalThis : global || self, global.op = factory(global.axios));
+}(this, (function (axios) { 'use strict';
+
+    function _interopDefaultLegacy (e) { return e && typeof e === 'object' && 'default' in e ? e : { 'default': e }; }
+
+    var axios__default = /*#__PURE__*/_interopDefaultLegacy(axios);
 
     function noop() { }
     function run(fn) {
@@ -2977,15 +2981,14 @@
 
         let provider = new NakamaTourneyProvider(auth_provider);
 
-        if (provider != null)
-        {
+        if (provider != null) {
 
             console.log('%c%s',
-            'color: blue; background: white;',
-            "Nakama Tourney Provider : --- " 
-            + options.url + ":" + options.port + " ---"
+                'color: blue; background: white;',
+                "Nakama Tourney Provider : --- "
+                + options.url + ":" + options.port + " ---"
             );
-            
+
             return provider;
         }
 
@@ -2999,7 +3002,7 @@
         client = null;
         session = null;
         tournamentId = null;
-        
+
         constructor(auth_provider) {
             this.authProvider = auth_provider;
         }
@@ -3022,10 +3025,10 @@
                 return tourneyInfo;
 
             } catch (e) {
-                console.error("getTourney failed [" + e.status + ":" + e.statusText + "]"); 
-                return(e);
-             }
-        }    
+                console.error("getTourney failed [" + e.status + ":" + e.statusText + "]");
+                return (e);
+            }
+        }
 
         attemptTourney = async (options) => {
 
@@ -3034,7 +3037,7 @@
                 await this.refreshSession();
 
                 let socket = await this.client.createSocket(false, false);
-                let socketSession = await  socket.connect(this.session, false);
+                let socketSession = await socket.connect(this.session, false);
 
                 let response = await socket.createMatch();
 
@@ -3043,30 +3046,36 @@
                 return response;
 
             } catch (e) {
-                console.error("attemptTourney failed [" + e.status + ":" + e.statusText + "]"); 
-                return(e);
-             }
-        }    
+                console.error("attemptTourney failed [" + e.status + ":" + e.statusText + "]");
+                return (e);
+            }
+        }
 
         postScore = async (options) => {
-
+            await this.refreshSession();
             try {
-
-                await this.refreshSession();
-
-                let result = await this.client.rpc(
-                    this.session,
-                    "clientrpc.post_tourney_score",
-                    options);
-
-                return result.payload;
-
-            } catch (e) {
-                console.error("postScore failed [" + e.status + ":" + e.statusText + "]"); 
-                return(e);
-             }
-        } 
+                const args = {
+                    tournament_id: options.tournament_id,
+                    metadata: JSON.parse(options.metadata)
+                };
         
+                const config = {
+                    headers: {
+                        Authorization: `Bearer ${this.session.token}`,
+                        'Content-Type': 'application/json'
+                    }
+                };
+        
+                const {prod, dev} = get_store_value(NODE_API_URL);
+                const requestURL = get_store_value(isProd) ? prod : dev;
+                const res = await axios__default['default'].post(`${requestURL}/tournaments/post-score`, args, config);
+                return res
+            } catch (e) {
+                console.error("postScore failed [" + e.status + ":" + e.statusText + "]");
+                return (e);
+            }
+        }
+
         joinTourney = async (options) => {
 
             try {
@@ -3079,17 +3088,17 @@
                 return tourneyInfo;
 
             } catch (e) {
-                console.error("joinTourney failed [" + e.status + ":" + e.statusText + "]"); 
-                return(e);
-             }
+                console.error("joinTourney failed [" + e.status + ":" + e.statusText + "]");
+                return (e);
+            }
         }
 
         saveTournamentId = (options) => {
-          this.tournamentId = options.tournamentId;
+            this.tournamentId = options.tournamentId;
         }
 
         getTournamentId = () => {
-          return this.tournamentId;
+            return this.tournamentId;
         }
     }
 
@@ -3383,6 +3392,11 @@
 
     const tourneyStore = getTourneyStore();
     const authStore = getAuthStore();
+
+    const NODE_API_URL = writable({
+        dev: "http://127.0.0.1:3001/oparcade/api",
+        prod: "http://op-arcade-dev.herokuapp.com/oparcade/api"
+    });
 
     async function useServers(options) {    
         let auth_provider = await get_store_value(authStore).useServer(options.auth_server);
