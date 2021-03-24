@@ -12,13 +12,9 @@ import { RATE_INCREASE, ADD_SCORE } from './constants.js';
 // DOM
 const gameBoard = document.getElementById('gameBoard');
 const scoreContainer = document.getElementById('score');
-// const highScoreContainer = document.getElementById('highScore');
 const playBtn = document.getElementById('play');
 const instBtn = document.getElementById('instructions');
-const loginBtn = document.getElementById('login');
 const backBtn = document.getElementById('back');
-const yesBtn = document.getElementById('yes');
-const noBtn = document.getElementById('no');
 const switchBtn = document.getElementById('switch');
 const instModal = document.getElementById('instModal');
 const titleModal = document.getElementById('titleModal');
@@ -26,6 +22,7 @@ const overlayModal = document.getElementById('overlayModal');
 const gameOverModal = document.getElementById('gameOverModal');
 const mobileContainer = document.getElementById('mobileContainer');
 const positionText = document.getElementById('position');
+const modalScore = document.getElementById('modalScore');
 
 // GAME LOOP
 let deltaTime = 0;
@@ -34,7 +31,6 @@ let snakeSpeed = 6; //how many times the snake moves per second
 let score = 0;
 let highScore =  0;
 scoreContainer.innerHTML = score;
-// highScoreContainer.innerHTML = score;
 
 
 function main (currentTime) {
@@ -45,6 +41,8 @@ function main (currentTime) {
     }
 
     gameOverModal.classList.remove('display-none');
+    modalScore.innerHTML = score;
+    submitScore();
   } else {
     window.requestAnimationFrame(main);
     const secondsSinceLastRender = (currentTime - deltaTime) / 1000;
@@ -102,12 +100,6 @@ function retrieveScore() {
   }
 }
 
-function restartGame() {
-  score = 0;
-  highScore = 0;
-  window.location = "/";
-}
-
 function toggleSwitch() {
   mobileContainer.classList.toggle('row-reverse');
   if (positionText.innerHTML === "left") {
@@ -142,14 +134,6 @@ function refreshPage() {
   , 3000);
 }
 
-function tryAgain() {
-  console.log("Try Again");
-  yesBtn.innerHTML = "Loading...";
-  yesBtn.style.opacity = 0.5;
-  yesBtn.style.pointerEvents = "none";
-  refreshPage();
-}
-
 async function submitScore() {
   const tournament_id = op.getTournamentId();
   const scorePassed = Number(score);
@@ -170,9 +154,6 @@ async function submitScore() {
     }
   } 
 
-  noBtn.innerHTML = "Loading...";
-  noBtn.style.opacity = 0.5;
-  noBtn.style.pointerEvents = "none";
   refreshPage();
 }
 
@@ -181,6 +162,4 @@ console.log("Prod");
 playBtn.addEventListener('click', startGame);
 instBtn.addEventListener('click', instructions);
 backBtn.addEventListener('click', back);
-yesBtn.addEventListener('click', tryAgain);
-noBtn.addEventListener('click', submitScore);
 switchBtn.addEventListener('click', toggleSwitch);
