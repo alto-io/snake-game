@@ -174,12 +174,9 @@ async function submitScore() {
   noBtn.style.opacity = 0.5;
   noBtn.style.pointerEvents = "none";
   refreshPage();
-  // score = 0;
-  // highScore = 0;
-  // window.top.postMessage("postScore", '*');
 }
 
-console.log("Local");
+console.log("Prod");
 
 playBtn.addEventListener('click', startGame);
 instBtn.addEventListener('click', instructions);
