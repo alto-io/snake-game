@@ -41,7 +41,7 @@ function main (currentTime) {
     }
 
     gameOverModal.classList.remove('display-none');
-    modalScore.innerHTML = score;
+    modalScore.innerText = score;
     submitScore();
   } else {
     window.requestAnimationFrame(main);
