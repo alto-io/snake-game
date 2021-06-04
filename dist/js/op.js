@@ -4576,9 +4576,7 @@
                         'Content-Type': 'application/json'
                     }
                 };
-        
-                const {prod, dev} = get_store_value(NODE_API_URL);
-                const requestURL = get_store_value(isProd) ? prod : dev;
+                const requestURL = get_store_value(apiUrl);
                 const res = await axios$1.post(`${requestURL}/tournaments/post-score`, args, config);
                 return res
             } catch (e) {
@@ -4895,21 +4893,16 @@
     const loginState = writable(CONSTANTS.LOGIN_STATES.LOGGED_OUT);
     const passedSessionToken = writable(null);
     const tournamentId = writable(null);
+    const apiUrl = writable(null);
     const url = readable(document.referrer);
 
     const onOpArcade = writable(false);
-    const isProd = writable(false);
     const isTournament = writable(false);
 
     const tourneyStore = getTourneyStore();
     const authStore = getAuthStore();
 
-    const NODE_API_URL = writable({
-        dev: "http://127.0.0.1:3001/oparcade/api",
-        prod: "http://op-arcade-dev.herokuapp.com/oparcade/api"
-    });
-
-    async function useServers(options) {    
+    async function useServers(options) {
         let auth_provider = await get_store_value(authStore).useServer(options.auth_server);
         let tourney_provider = await get_store_value(tourneyStore).useServer(options.tourney_server, auth_provider);
 
@@ -4930,18 +4923,23 @@
     	let $isTournament;
     	let $tourneyStore;
     	let $authStore;
-    	component_subscribe($$self, url, $$value => $$invalidate(18, $url = $$value));
-    	component_subscribe($$self, onOpArcade, $$value => $$invalidate(19, $onOpArcade = $$value));
-    	component_subscribe($$self, passedSessionToken, $$value => $$invalidate(20, $passedSessionToken = $$value));
-    	component_subscribe($$self, loginState, $$value => $$invalidate(21, $loginState = $$value));
-    	component_subscribe($$self, tournamentId, $$value => $$invalidate(22, $tournamentId = $$value));
-    	component_subscribe($$self, isTournament, $$value => $$invalidate(23, $isTournament = $$value));
-    	component_subscribe($$self, tourneyStore, $$value => $$invalidate(24, $tourneyStore = $$value));
-    	component_subscribe($$self, authStore, $$value => $$invalidate(25, $authStore = $$value));
-    	const OP_ARCADE_URL_DEV = "http://localhost:3000/";
-    	const OP_ARCADE_URL_PROD = "http://test.outplay.games/";
-    	const OP_ARCADE_URL_DEV_ORIGIN = "http://localhost:3000";
-    	const OP_ARCADE_URL_PROD_ORIGIN = "http://test.outplay.games";
+    	component_subscribe($$self, url, $$value => $$invalidate(14, $url = $$value));
+    	component_subscribe($$self, onOpArcade, $$value => $$invalidate(15, $onOpArcade = $$value));
+    	component_subscribe($$self, passedSessionToken, $$value => $$invalidate(16, $passedSessionToken = $$value));
+    	component_subscribe($$self, loginState, $$value => $$invalidate(17, $loginState = $$value));
+    	component_subscribe($$self, tournamentId, $$value => $$invalidate(18, $tournamentId = $$value));
+    	component_subscribe($$self, isTournament, $$value => $$invalidate(19, $isTournament = $$value));
+    	component_subscribe($$self, tourneyStore, $$value => $$invalidate(20, $tourneyStore = $$value));
+    	component_subscribe($$self, authStore, $$value => $$invalidate(21, $authStore = $$value));
+
+    	const ALLOWED_ORIGINS = [
+    		"http://localhost:3000",
+    		"http://test.outplay.games",
+    		"http://alpha.outplay.games",
+    		"http://op-arcade-dev.herokuapp.com",
+    		"http://op-arcade-alpha.herokuapp.com",
+    		"http://op-arcade-prod.herokuapp.com"
+    	];
 
     	const DEFAULT_CONFIG = {
     		tourney_server: {
@@ -4974,15 +4972,9 @@
     		}
 
     		// check if we're on OP Arcade
-    		onOpArcade.set($url == OP_ARCADE_URL_DEV || $url == OP_ARCADE_URL_PROD);
+    		onOpArcade.set(ALLOWED_ORIGINS.includes($url.slice(0, -1)));
 
-    		isProd.set($url == OP_ARCADE_URL_PROD);
-
-    		if (get_store_value(isProd)) {
-    			console.log("%c%s", "color: orange; background: white;", "-- Welcome to OP Arcade --");
-    		} else {
-    			console.log("%c%s", "color: orange; background: white;", "-- development mode --");
-    		}
+    		console.log("%c%s", "color: orange; background: white;", "-- Welcome to OP Arcade --");
 
     		useServers(serverConfig).then(result => {
     			if ($onOpArcade) {
@@ -5006,10 +4998,11 @@
     	window.addEventListener(
     		"message",
     		e => {
-    			if (e.origin == OP_ARCADE_URL_DEV_ORIGIN || e.origin == OP_ARCADE_URL_PROD_ORIGIN) {
+    			if (ALLOWED_ORIGINS.includes(e.origin)) {
     				try {
-    					let session = JSON.parse(e.data);
-    					passedSessionToken.set(session);
+    					let messageData = JSON.parse(e.data);
+    					apiUrl.set(messageData.apiUrl);
+    					passedSessionToken.set(messageData);
     					updateOpArcadeStores();
     				} catch(e) {
     					console.log(e);
@@ -5065,14 +5058,10 @@
     	}
 
     	$$self.$$set = $$props => {
-    		if ("config" in $$props) $$invalidate(5, config = $$props.config);
+    		if ("config" in $$props) $$invalidate(1, config = $$props.config);
     	};
 
     	return [
-    		OP_ARCADE_URL_DEV,
-    		OP_ARCADE_URL_PROD,
-    		OP_ARCADE_URL_DEV_ORIGIN,
-    		OP_ARCADE_URL_PROD_ORIGIN,
     		DEFAULT_CONFIG,
     		config,
     		configStore,
@@ -5095,49 +5084,29 @@
     		super();
 
     		init(this, options, instance, null, safe_not_equal, {
-    			OP_ARCADE_URL_DEV: 0,
-    			OP_ARCADE_URL_PROD: 1,
-    			OP_ARCADE_URL_DEV_ORIGIN: 2,
-    			OP_ARCADE_URL_PROD_ORIGIN: 3,
-    			DEFAULT_CONFIG: 4,
-    			config: 5,
-    			configStore: 6,
-    			CONSTANTS: 7,
-    			useServers: 8,
-    			props: 9,
-    			initialize: 10,
-    			getTourney: 11,
-    			loginPrompt: 12,
-    			attemptTourney: 13,
-    			postScore: 14,
-    			joinTourney: 15,
-    			getSessionToken: 16,
-    			getTournamentId: 17
+    			DEFAULT_CONFIG: 0,
+    			config: 1,
+    			configStore: 2,
+    			CONSTANTS: 3,
+    			useServers: 4,
+    			props: 5,
+    			initialize: 6,
+    			getTourney: 7,
+    			loginPrompt: 8,
+    			attemptTourney: 9,
+    			postScore: 10,
+    			joinTourney: 11,
+    			getSessionToken: 12,
+    			getTournamentId: 13
     		});
     	}
 
-    	get OP_ARCADE_URL_DEV() {
+    	get DEFAULT_CONFIG() {
     		return this.$$.ctx[0];
     	}
 
-    	get OP_ARCADE_URL_PROD() {
-    		return this.$$.ctx[1];
-    	}
-
-    	get OP_ARCADE_URL_DEV_ORIGIN() {
-    		return this.$$.ctx[2];
-    	}
-
-    	get OP_ARCADE_URL_PROD_ORIGIN() {
-    		return this.$$.ctx[3];
-    	}
-
-    	get DEFAULT_CONFIG() {
-    		return this.$$.ctx[4];
-    	}
-
     	get configStore() {
-    		return this.$$.ctx[6];
+    		return this.$$.ctx[2];
     	}
 
     	get CONSTANTS() {
@@ -5149,39 +5118,39 @@
     	}
 
     	get props() {
-    		return this.$$.ctx[9];
+    		return this.$$.ctx[5];
     	}
 
     	get initialize() {
-    		return this.$$.ctx[10];
+    		return this.$$.ctx[6];
     	}
 
     	get getTourney() {
-    		return this.$$.ctx[11];
+    		return this.$$.ctx[7];
     	}
 
     	get loginPrompt() {
-    		return this.$$.ctx[12];
+    		return this.$$.ctx[8];
     	}
 
     	get attemptTourney() {
-    		return this.$$.ctx[13];
+    		return this.$$.ctx[9];
     	}
 
     	get postScore() {
-    		return this.$$.ctx[14];
+    		return this.$$.ctx[10];
     	}
 
     	get joinTourney() {
-    		return this.$$.ctx[15];
+    		return this.$$.ctx[11];
     	}
 
     	get getSessionToken() {
-    		return this.$$.ctx[16];
+    		return this.$$.ctx[12];
     	}
 
     	get getTournamentId() {
-    		return this.$$.ctx[17];
+    		return this.$$.ctx[13];
     	}
     }
 
